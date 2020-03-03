@@ -5,7 +5,7 @@
   "theme": {
     "images": {
       "additional_backgrounds": [
-        "images/blur.png"
+        "blur.png"
       ]
     },
     "properties": {
@@ -17,32 +17,25 @@
       ]
     },
 
-
     "colors": {
-      // Top bar
       "frame": "rgb(40, 44, 52)",
       "frame_inactive": "rgb(40, 44, 52)",
       "toolbar": "rgb(40, 44, 52, 0.5)",
 
-        //separator
       "toolbar_bottom_separator": "rgb(40, 44, 52, 0.5)",
       "toolbar_field_separator": "rgb(205, 87, 183)",
       "toolbar_top_separator": "rgb(40, 44, 52, 0.0)",
       "toolbar_vertical_separator": "rgb(205, 87, 183)",
 
-        //field
       "toolbar_field": "rgb(149, 38, 108, 0.4)",
       "toolbar_field_focus": "rgb(149, 38, 108, 0.6)",
 
-        //field text
       "toolbar_field_text": "rgb(199, 199, 199)",
       "toolbar_field_text_focus": "rgb(255, 255, 255)",
 
-        //field border
       "toolbar_field_border": "rgb(200, 45, 142, 0.35)",
       "toolbar_field_border_focus": "rgb(205, 87, 183, 0.55)",
 
-        //highlighted
       "toolbar_field_highlight": "rgb(200, 45, 142)",
       "toolbar_field_highlight_text": "rgb(255, 255, 255)",
 
@@ -59,7 +52,6 @@
       "icons": "rgb(255, 255, 255)",
       "icons_attention": "rgb(231, 181, 52)",
 
-      // Other menus
       "bookmark_text": "rgb(255, 255, 255)",
 
       "ntp_background": "rgb(40, 44, 52)",
