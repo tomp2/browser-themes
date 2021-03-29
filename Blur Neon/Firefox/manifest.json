@@ -1,9 +1,10 @@
 {
   "manifest_version": 2,
-  "version": "1.3",
+  "version": "1.4",
   "name": "Blur Neon",
   "theme": {
     "images": {
+      "theme_frame": "blur.png",
       "additional_backgrounds": [
         "blur.png"
       ]
@@ -11,58 +12,41 @@
     "properties": {
       "additional_backgrounds_alignment": [
         "right bottom"
-      ],
-      "additional_backgrounds_tiling": [
-        "no-repeat"
       ]
     },
-
     "colors": {
       "frame": "rgb(40, 44, 52)",
       "frame_inactive": "rgb(40, 44, 52)",
       "toolbar": "rgb(40, 44, 52, 0.5)",
-
       "toolbar_bottom_separator": "rgb(40, 44, 52, 0.5)",
       "toolbar_field_separator": "rgb(205, 87, 183)",
       "toolbar_top_separator": "rgb(40, 44, 52, 0.0)",
-      "toolbar_vertical_separator": "rgb(205, 87, 183)",
-
+      "toolbar_vertical_separator": "rgb(180, 87, 183)",
       "toolbar_field": "rgb(149, 38, 108, 0.4)",
-      "toolbar_field_focus": "rgb(149, 38, 108, 0.6)",
-
+      "toolbar_field_focus": "rgb(149, 38, 108, 0.90)",
       "toolbar_field_text": "rgb(199, 199, 199)",
       "toolbar_field_text_focus": "rgb(255, 255, 255)",
-
       "toolbar_field_border": "rgb(200, 45, 142, 0.35)",
       "toolbar_field_border_focus": "rgb(205, 87, 183, 0.55)",
-
       "toolbar_field_highlight": "rgb(200, 45, 142)",
       "toolbar_field_highlight_text": "rgb(255, 255, 255)",
-
       "tab_background_separator": "rgb(255, 255, 255)",
       "tab_background_text": "rgb(255, 255, 255)",
       "tab_line": "rgb(205, 87, 183)",
       "tab_loading": "rgb(255, 255, 255)",
       "tab_selected": "rgb(200, 25, 142, 0.7)",
       "tab_text": "rgb(255, 255, 255)",
-
       "button_background_active": "rgb(149, 38, 108, 0.8)",
       "button_background_hover": "rgb(149, 38, 145, 0.3)",
-
       "icons": "rgb(255, 255, 255)",
       "icons_attention": "rgb(231, 181, 52)",
-
-      "bookmark_text": "rgb(255, 255, 255)",
-
       "ntp_background": "rgb(40, 44, 52)",
       "ntp_text": "rgb(255, 255, 255)",
-
       "popup": "rgb(40, 44, 52)",
       "popup_text": "rgb(255, 255, 255)",
       "popup_border": "rgb(149, 38, 108)",
-      "popup_highlight": "rgb(149, 38, 108, 0.7)",
+      "popup_highlight": "rgb(101, 41, 132, 0.5)",
       "popup_highlight_text": "rgb(255, 255, 255)",
-
       "sidebar": "rgb(40, 44, 52)",
       "sidebar_highlight": "rgb(149, 38, 108, 0.7)",
       "sidebar_highlight_text": "rgb(255, 255, 255)",
