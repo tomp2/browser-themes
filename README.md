@@ -1,7 +1,7 @@
 ## Browser themes by me
 
 > ### [Neon Blur](https://addons.mozilla.org/en-US/firefox/addon/neon-blur?utm_source=github.com/tomp2/browser-themes&utm_medium=github-readme&utm_content=addon-name-title&utm_campaign=listing)
-> [![Theme Preview](Blur%20Neon/Firefox/preview.png)](https://addons.mozilla.org/en-US/firefox/addon/neon-blur?utm_source=github.com/tomp2/browser-themes&utm_medium=github-readme&utm_content=preview_png&utm_campaign=listing)
+> [![Theme Preview](neon-blur/Firefox/preview.png)](https://addons.mozilla.org/en-US/firefox/addon/neon-blur?utm_source=github.com/tomp2/browser-themes&utm_medium=github-readme&utm_content=preview_png&utm_campaign=listing)
 >
 > ![Mozilla Add-on](https://img.shields.io/amo/users/neon-blur)
 > ![Mozilla Add-on](https://img.shields.io/amo/dw/neon-blur)
