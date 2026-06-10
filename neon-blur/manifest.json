@@ -1,0 +1,57 @@
+{
+  "manifest_version": 2,
+  "version": "1.5",
+  "name": "Blur Neon",
+  "theme": {
+    "images": {
+      "theme_frame": "blur.png",
+      "additional_backgrounds": [
+        "blur.png"
+      ]
+    },
+    "properties": {
+      "additional_backgrounds_alignment": [
+        "right bottom"
+      ]
+    },
+    "colors": {
+      "frame": [40, 44, 52],
+      "frame_inactive": [40, 44, 52],
+      "toolbar": [40, 44, 52, 0.5],
+      "toolbar_bottom_separator": [40, 44, 52, 0.5],
+      "toolbar_field_separator": [205, 87, 183],
+      "toolbar_top_separator": [40, 44, 52, 0.0],
+      "toolbar_vertical_separator": [180, 87, 183],
+      "toolbar_field": [149, 38, 108, 0.4],
+      "toolbar_field_focus": [139, 30, 100, 0.90],
+      "toolbar_field_text": [255, 255, 255],
+      "toolbar_field_text_focus": [255, 255, 255],
+      "toolbar_field_border": [200, 45, 142, 0.35],
+      "toolbar_field_border_focus": [205, 87, 183, 0.55],
+      "toolbar_field_highlight": [200, 45, 142],
+      "toolbar_field_highlight_text": [255, 255, 255],
+      "tab_background_separator": [255, 255, 255],
+      "tab_background_text": [255, 255, 255],
+      "tab_line": [205, 87, 183],
+      "tab_loading": [255, 255, 255],
+      "tab_selected": [200, 25, 142, 0.7],
+      "tab_text": [255, 255, 255],
+      "button_background_active": [149, 38, 108, 0.8],
+      "button_background_hover": [149, 38, 145, 0.3],
+      "icons": [255, 255, 255],
+      "icons_attention": [231, 181, 52],
+      "ntp_background": [40, 44, 52],
+      "ntp_text": [255, 255, 255],
+      "popup": [40, 44, 52],
+      "popup_text": [255, 255, 255],
+      "popup_border": [200, 45, 142, 0.35],
+      "popup_highlight": [101, 41, 132, 0.8],
+      "popup_highlight_text": [255, 255, 255],
+      "sidebar": [40, 44, 52],
+      "sidebar_highlight": [149, 38, 108, 0.7],
+      "sidebar_highlight_text": [255, 255, 255],
+      "sidebar_text": [199, 199, 199],
+      "sidebar_border": [149, 38, 108]
+    }
+  }
+}
