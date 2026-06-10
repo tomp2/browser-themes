@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Icon</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: #141420;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+      }
+
+      .icon {
+        width: 256px;
+        height: 256px;
+        border-radius: 52px;
+        position: relative;
+        background: url("./background_3000x512.png");
+        border: 15px solid rgba(255, 255, 255, 0.4);
+      }
+
+      .center {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 230px;
+        height: 230px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="icon">
+      <div class="center">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="220"
+          height="220"
+          viewBox="-1 1 24 24"
+          fill="none"
+          stroke="rgba(255,255,255,1)"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path d="M11 7l6 6" />
+          <path
+            d="M4 16l11.7 -11.7a1 1 0 0 1 1.4 0l2.6 2.6a1 1 0 0 1 0 1.4l-11.7 11.7h-4v-4z"
+          />
+        </svg>
+      </div>
+    </div>
+  </body>
+</html>

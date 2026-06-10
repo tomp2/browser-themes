@@ -1,0 +1,39 @@
+{
+    "name": "colorful-windows",
+    "version": "1.0.0",
+    "private": true,
+    "type": "commonjs",
+    "engines": {
+        "node": ">=20.0.0",
+        "npm": ">=8.0.0"
+    },
+    "scripts": {
+        "build": "tsc -p tsconfig.background.json && tsc -p tsconfig.popup.json",
+        "typecheck": "tsc -p tsconfig.background.json --noEmit && tsc -p tsconfig.popup.json --noEmit",
+        "lint:extension": "pnpm run build && web-ext lint",
+        "package": "pnpm run build && web-ext build",
+        "start:firefox": "pnpm run build && web-ext run",
+        "render-icon": "node render-icon.js"
+    },
+    "webExt": {
+        "sourceDir": "src",
+        "artifactsDir": "dist",
+        "ignoreFiles": [
+            "*.ts",
+            "*.d.ts"
+        ],
+        "build": {
+            "overwriteDest": true
+        },
+        "run": {
+            "firefoxProfile": "./dev-profile",
+            "keepProfileChanges": true
+        }
+    },
+    "devDependencies": {
+        "puppeteer": "^24.0.0",
+        "sharp": "^0.34.0",
+        "typescript": "^6.0.3",
+        "web-ext": "^10.3.0"
+    }
+}

@@ -1,0 +1,35 @@
+{
+    "manifest_version": 2,
+    "name": "Colorful Blur",
+    "version": "1.0",
+    "description": "Per-window hue-shifted neon blur themes for Firefox",
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "colorful-blur@tomp2",
+            "strict_min_version": "115.0",
+            "data_collection_permissions": {
+                "required": ["none"]
+            }
+        }
+    },
+    "permissions": ["theme", "storage", "sessions"],
+    "background": {
+        "scripts": ["background.js"],
+        "persistent": true
+    },
+    "icons": {
+        "48": "images/icon-48.png",
+        "96": "images/icon-96.png",
+        "128": "images/icon-128.png"
+    },
+    "browser_action": {
+        "default_popup": "popup.html",
+        "default_title": "Colorful Blur",
+        "default_icon": {
+            "16": "images/icon-16.png",
+            "32": "images/icon-32.png",
+            "48": "images/icon-48.png"
+        }
+    },
+    "web_accessible_resources": ["images/background.png"]
+}

@@ -1,0 +1,136 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: #282c34;
+    color: #fff;
+    font-family:
+        system-ui,
+        -apple-system,
+        sans-serif;
+    font-size: 13px;
+    min-width: 260px;
+    padding: 12px;
+}
+
+h2 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #cd57b7;
+    margin-bottom: 10px;
+    letter-spacing: 0.02em;
+}
+
+.window-entry {
+    padding: 8px 10px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    margin-bottom: 8px;
+}
+
+.window-entry.current {
+    outline: 1px solid rgba(205, 87, 183, 0.45);
+}
+
+.window-label {
+    font-size: 11px;
+    color: #888;
+    margin-bottom: 7px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.swatches {
+    display: flex;
+    gap: 6px;
+}
+
+.swatch {
+    appearance: none;
+    padding: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition:
+        transform 0.1s ease,
+        border-color 0.1s ease;
+    flex-shrink: 0;
+}
+
+.swatch:hover {
+    transform: scale(1.2);
+}
+
+.swatch.active {
+    border-color: #fff;
+    transform: scale(1.1);
+}
+
+hr {
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    margin: 10px 0;
+}
+
+.setting-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #aaa;
+    font-size: 12px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.setting-row input[type="checkbox"] {
+    accent-color: #cd57b7;
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.setting-row:hover {
+    color: #ddd;
+}
+
+.error-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    background: rgba(204, 0, 0, 0.2);
+    border: 1px solid rgba(204, 0, 0, 0.5);
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin-bottom: 10px;
+    font-size: 11px;
+    color: #ffaaaa;
+    line-height: 1.4;
+}
+
+.error-banner span {
+    flex: 1;
+    word-break: break-word;
+}
+
+.error-dismiss {
+    appearance: none;
+    background: none;
+    border: none;
+    color: #ffaaaa;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    padding: 0;
+    flex-shrink: 0;
+    opacity: 0.7;
+}
+
+.error-dismiss:hover {
+    opacity: 1;
+}

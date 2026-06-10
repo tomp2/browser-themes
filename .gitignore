@@ -1,1 +1,8 @@
-.idea
+node_modules/
+.vscode/
+dist
+**/*.zip
+**/*.js
+colorful-windows/dev-profile/
+
+!render-icon.js
