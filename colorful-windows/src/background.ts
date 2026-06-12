@@ -176,16 +176,16 @@ const BASE_COLORS = {
 
 const REFERENCE_HUE = rgbToHsl(...BASE_COLORS.toolbar_field_separator).h;
 
-const SWATCHES = [
-    { name: "Purple", hue: 300 },
-    { name: "Pink", hue: 330 },
+const SWATCHES: readonly Swatch[] = [
+    { name: "Original", hue: REFERENCE_HUE },
+    { name: "Purple", hue: 290 },
     { name: "Red", hue: 0 },
     { name: "Orange", hue: 30 },
-    { name: "Yellow", hue: 60 },
+    { name: "Yellow", hue: 50 },
     { name: "Green", hue: 120 },
     { name: "Cyan", hue: 180 },
     { name: "Blue", hue: 240 },
-] as const satisfies readonly Swatch[];
+];
 
 // Cache Promise so concurrent calls for same hue share the in-flight request
 const imagePromiseCache = new Map<number, Promise<string>>();
