@@ -15,6 +15,7 @@ interface RgbObject {
 interface Swatch {
     name: string;
     hue: number;
+    hueAttraction?: number;
 }
 
 interface WindowState {
@@ -120,7 +121,18 @@ function hslToRgb(h: number, s: number, l: number): RgbObject {
     };
 }
 
-function shiftColorHue(color: ThemeColor, hueShift: number): ThemeColor {
+function circularHueDiff(h1: number, h2: number): number {
+    const diff = ((h1 - h2) % 360 + 360) % 360;
+    return diff > 180 ? diff - 360 : diff;
+}
+
+function applyHueAttraction(hue: number, targetHue: number, attraction: number): number {
+    if (attraction === 0) return hue;
+    const diff = circularHueDiff(hue, targetHue);
+    return (targetHue + diff * (1 - attraction) + 360) % 360;
+}
+
+function shiftColorHue(color: ThemeColor, hueShift: number, targetHue?: number, hueAttraction?: number): ThemeColor {
     const [r, g, b] = color;
     const { h, s, l } = rgbToHsl(r, g, b);
 
@@ -128,7 +140,11 @@ function shiftColorHue(color: ThemeColor, hueShift: number): ThemeColor {
         return color;
     }
 
-    const shifted = hslToRgb((h + hueShift + 360) % 360, s, l);
+    let newHue = (h + hueShift + 360) % 360;
+    if (targetHue !== undefined && hueAttraction) {
+        newHue = applyHueAttraction(newHue, targetHue, hueAttraction);
+    }
+    const shifted = hslToRgb(newHue, s, l);
     return color.length === 4
         ? [shifted.r, shifted.g, shifted.b, color[3]]
         : [shifted.r, shifted.g, shifted.b];
@@ -180,15 +196,14 @@ const SWATCHES: readonly Swatch[] = [
     { name: "Original", hue: REFERENCE_HUE },
     { name: "Purple", hue: 290 },
     { name: "Red", hue: 0 },
-    { name: "Orange", hue: 30 },
-    { name: "Yellow", hue: 50 },
+    { name: "Orange", hue: 30, hueAttraction: 0.6 },
+    { name: "Yellow", hue: 50, hueAttraction: 0.6 },
     { name: "Green", hue: 120 },
-    { name: "Cyan", hue: 180 },
-    { name: "Blue", hue: 240 },
+    { name: "Cyan", hue: 180, hueAttraction: 0.3 },
+    { name: "Blue", hue: 210 },
 ];
 
-// Cache Promise so concurrent calls for same hue share the in-flight request
-const imagePromiseCache = new Map<number, Promise<string>>();
+const imagePromiseCache = new Map<string, Promise<string>>();
 
 const windowSwatches = new Map<BrowserWindowId, number>();
 
@@ -263,7 +278,7 @@ function loadImageToCanvas(url: string): Promise<HTMLCanvasElement> {
     });
 }
 
-async function loadAndProcessImage(hueShift: number): Promise<string> {
+async function loadAndProcessImage(hueShift: number, targetHue?: number, hueAttraction?: number): Promise<string> {
     const canvas = await loadImageToCanvas(
         browser.runtime.getURL("images/background.png"),
     );
@@ -274,7 +289,7 @@ async function loadAndProcessImage(hueShift: number): Promise<string> {
     }
 
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    rotateImageHue(imageData.data, hueShift);
+    rotateImageHue(imageData.data, hueShift, targetHue, hueAttraction);
     ctx.putImageData(imageData, 0, 0);
 
     const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
@@ -282,19 +297,19 @@ async function loadAndProcessImage(hueShift: number): Promise<string> {
     return dataUrl;
 }
 
-function getHueShiftedImageUrl(hueShift: number): Promise<string> {
-    const key = Math.round(hueShift);
+function getHueShiftedImageUrl(hueShift: number, targetHue?: number, hueAttraction?: number): Promise<string> {
+    const key = `${Math.round(hueShift)}_${targetHue ?? 0}_${Math.round((hueAttraction ?? 0) * 100)}`;
     const cached = imagePromiseCache.get(key);
     if (cached !== undefined) return cached;
 
-    const promise = loadAndProcessImage(hueShift);
+    const promise = loadAndProcessImage(hueShift, targetHue, hueAttraction);
     imagePromiseCache.set(key, promise);
     // Evict on failure so next call retries
     promise.catch(() => imagePromiseCache.delete(key));
     return promise;
 }
 
-function rotateImageHue(data: Uint8ClampedArray, hueShift: number): void {
+function rotateImageHue(data: Uint8ClampedArray, hueShift: number, targetHue?: number, hueAttraction?: number): void {
     for (let i = 0; i < data.length; i += 4) {
         const r0 = data[i]!;
         const g0 = data[i + 1]!;
@@ -305,7 +320,11 @@ function rotateImageHue(data: Uint8ClampedArray, hueShift: number): void {
             continue;
         }
 
-        const { r, g, b } = hslToRgb((h + hueShift + 360) % 360, s, l);
+        let newHue = (h + hueShift + 360) % 360;
+        if (targetHue !== undefined && hueAttraction) {
+            newHue = applyHueAttraction(newHue, targetHue, hueAttraction);
+        }
+        const { r, g, b } = hslToRgb(newHue, s, l);
         data[i] = r;
         data[i + 1] = g;
         data[i + 2] = b;
@@ -371,17 +390,19 @@ async function loadWindowColors(): Promise<void> {
 
 async function applyThemeToWindow(windowId: BrowserWindowId): Promise<void> {
     const swatchIdx = windowSwatches.get(windowId) ?? 0;
-    const hueShift = SWATCHES[swatchIdx]!.hue - REFERENCE_HUE;
+    const swatch = SWATCHES[swatchIdx]!;
+    const hueShift = swatch.hue - REFERENCE_HUE;
+    const { hue: targetHue, hueAttraction } = swatch;
     const shiftedColors: Record<string, ThemeColor> = {};
 
     for (const [key, value] of Object.entries(BASE_COLORS)) {
-        shiftedColors[key] = shiftColorHue(value, hueShift);
+        shiftedColors[key] = shiftColorHue(value, hueShift, targetHue, hueAttraction);
     }
 
     let imageUrl: string | null = null;
 
     try {
-        imageUrl = await getHueShiftedImageUrl(hueShift);
+        imageUrl = await getHueShiftedImageUrl(hueShift, targetHue, hueAttraction);
     } catch (error) {
         console.warn(
             "[ColorfulBlur] image processing failed, applying colors only:",
