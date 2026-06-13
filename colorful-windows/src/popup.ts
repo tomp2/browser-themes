@@ -7,7 +7,7 @@ interface PopupSwatch {
 
 interface PopupWindowState {
     id: BrowserWindowId;
-    swatchIdx: number;
+    hue: number;
 }
 
 interface PopupStateResponse {
@@ -37,7 +37,7 @@ function isPopupWindowState(value: unknown): value is PopupWindowState {
     return (
         isRecord(value) &&
         typeof value["id"] === "number" &&
-        typeof value["swatchIdx"] === "number"
+        typeof value["hue"] === "number"
     );
 }
 
@@ -90,7 +90,7 @@ void (async () => {
             await Promise.all([
                 browser.runtime.sendMessage({ type: "GET_STATE" }),
                 browser.windows.getCurrent(),
-                browser.storage.local.get("autoAssign"),
+                browser.storage.local.get(["autoAssign", "swatchOrder"]),
                 browser.storage.local.get("lastError"),
             ]);
 
@@ -105,6 +105,27 @@ void (async () => {
             typeof stored["autoAssign"] === "boolean"
                 ? stored["autoAssign"]
                 : true;
+
+        const rawOrder = stored["swatchOrder"];
+        const knownNames = new Set(state.swatches.map((s) => s.name));
+        let swatchOrder: string[] =
+            Array.isArray(rawOrder) && rawOrder.every((x) => typeof x === "string")
+                ? (rawOrder as string[])
+                : state.swatches.map((s) => s.name);
+        // Drop stale names, append any swatches missing from the saved order
+        swatchOrder = [
+            ...swatchOrder.filter((n) => knownNames.has(n)),
+            ...state.swatches
+                .filter((s) => !swatchOrder.includes(s.name))
+                .map((s) => s.name),
+        ];
+
+        function getOrderedSwatches(): PopupSwatch[] {
+            return swatchOrder
+                .map((name) => state.swatches.find((s) => s.name === name))
+                .filter((s): s is PopupSwatch => s !== undefined);
+        }
+
         const list = getRequiredElement("windows-list", HTMLDivElement);
 
         const lastError = isStoredError(errorStorage["lastError"])
@@ -130,6 +151,93 @@ void (async () => {
             list.parentElement?.insertBefore(banner, list);
         }
 
+        const allRows: Array<{ row: HTMLDivElement; win: PopupWindowState }> =
+            [];
+        let dragSrcName: string | null = null;
+
+        function renderSwatchRow(
+            row: HTMLDivElement,
+            win: PopupWindowState,
+        ): void {
+            row.innerHTML = "";
+            const ordered = getOrderedSwatches();
+
+            ordered.forEach((swatch) => {
+                const dot = document.createElement("button");
+                dot.className = `swatch${swatch.hue === win.hue ? " active" : ""}`;
+                dot.style.background = `hsl(${swatch.hue}, 70%, 60%)`;
+                dot.title = swatch.name;
+                dot.type = "button";
+                dot.setAttribute("aria-label", swatch.name);
+                dot.setAttribute("draggable", "true");
+
+                dot.addEventListener("click", () => {
+                    row.querySelectorAll<HTMLElement>(".swatch").forEach(
+                        (d, i) => {
+                            d.classList.toggle(
+                                "active",
+                                ordered[i]?.hue === swatch.hue,
+                            );
+                        },
+                    );
+                    browser.runtime
+                        .sendMessage({
+                            type: "SET_SWATCH",
+                            windowId: win.id,
+                            hue: swatch.hue,
+                        })
+                        .catch((error: unknown) => {
+                            console.error(
+                                "[ColorfulBlur] set swatch failed:",
+                                error,
+                            );
+                        });
+                });
+
+                dot.addEventListener("dragstart", (e) => {
+                    dragSrcName = swatch.name;
+                    dot.classList.add("dragging");
+                    if (e.dataTransfer) e.dataTransfer.effectAllowed = "move";
+                });
+
+                dot.addEventListener("dragend", () => {
+                    dot.classList.remove("dragging");
+                    document
+                        .querySelectorAll(".swatch.drag-over")
+                        .forEach((el) => el.classList.remove("drag-over"));
+                    dragSrcName = null;
+                });
+
+                dot.addEventListener("dragover", (e) => {
+                    e.preventDefault();
+                    if (!dragSrcName || dragSrcName === swatch.name) return;
+                    if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+                    document
+                        .querySelectorAll(".swatch.drag-over")
+                        .forEach((el) => el.classList.remove("drag-over"));
+                    dot.classList.add("drag-over");
+                });
+
+                dot.addEventListener("drop", (e) => {
+                    e.preventDefault();
+                    if (!dragSrcName || dragSrcName === swatch.name) return;
+                    const srcIdx = swatchOrder.indexOf(dragSrcName);
+                    const dstIdx = swatchOrder.indexOf(swatch.name);
+                    if (srcIdx === -1 || dstIdx === -1) return;
+                    const newOrder = [...swatchOrder];
+                    const [moved] = newOrder.splice(srcIdx, 1) as [string];
+                    newOrder.splice(dstIdx, 0, moved);
+                    swatchOrder = newOrder;
+                    void browser.storage.local.set({ swatchOrder });
+                    allRows.forEach(({ row: r, win: w }) =>
+                        renderSwatchRow(r, w),
+                    );
+                });
+
+                row.appendChild(dot);
+            });
+        }
+
         state.windows.forEach((win, idx) => {
             const isCurrent =
                 currentWindow.id != null && win.id === currentWindow.id;
@@ -147,40 +255,8 @@ void (async () => {
             const swatchRow = document.createElement("div");
             swatchRow.className = "swatches";
 
-            state.swatches.forEach((swatch, swatchIdx) => {
-                const dot = document.createElement("button");
-                dot.className = `swatch${swatchIdx === win.swatchIdx ? " active" : ""}`;
-                dot.style.background = `hsl(${swatch.hue}, 70%, 60%)`;
-                dot.title = swatch.name;
-                dot.type = "button";
-                dot.setAttribute("aria-label", swatch.name);
-
-                dot.addEventListener("click", () => {
-                    swatchRow
-                        .querySelectorAll<HTMLElement>(".swatch")
-                        .forEach((swatchDot, i) => {
-                            swatchDot.classList.toggle(
-                                "active",
-                                i === swatchIdx,
-                            );
-                        });
-
-                    browser.runtime
-                        .sendMessage({
-                            type: "SET_SWATCH",
-                            windowId: win.id,
-                            swatchIdx,
-                        })
-                        .catch((error: unknown) => {
-                            console.error(
-                                "[ColorfulBlur] set swatch failed:",
-                                error,
-                            );
-                        });
-                });
-
-                swatchRow.appendChild(dot);
-            });
+            allRows.push({ row: swatchRow, win });
+            renderSwatchRow(swatchRow, win);
 
             entry.appendChild(swatchRow);
             list.appendChild(entry);
@@ -204,6 +280,11 @@ void (async () => {
             document.createTextNode(" Auto-assign colors to new windows"),
         );
         document.body.appendChild(settingsRow);
+
+        const hint = document.createElement("p");
+        hint.className = "drag-hint";
+        hint.textContent = "Drag colors to reorder.";
+        document.body.appendChild(hint);
     } catch (error) {
         document.body.textContent = `Extension error: ${error instanceof Error ? error.message : String(error)}`;
     }

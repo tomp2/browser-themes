@@ -54,11 +54,12 @@ h2 {
     width: 22px;
     height: 22px;
     border-radius: 50%;
-    cursor: pointer;
+    cursor: grab;
     border: 2px solid transparent;
     transition:
         transform 0.1s ease,
-        border-color 0.1s ease;
+        border-color 0.1s ease,
+        opacity 0.1s ease;
     flex-shrink: 0;
 }
 
@@ -69,6 +70,18 @@ h2 {
 .swatch.active {
     border-color: #fff;
     transform: scale(1.1);
+}
+
+.swatch.dragging {
+    opacity: 0.3;
+    transform: scale(0.9);
+    cursor: grabbing;
+}
+
+.swatch.drag-over {
+    outline: 2px solid rgba(255, 255, 255, 0.75);
+    outline-offset: 2px;
+    transform: scale(1.2);
 }
 
 hr {
@@ -97,6 +110,13 @@ hr {
 
 .setting-row:hover {
     color: #ddd;
+}
+
+.drag-hint {
+    font-size: 10px;
+    color: #555;
+    text-align: right;
+    margin-top: 8px;
 }
 
 .error-banner {
