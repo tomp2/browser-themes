@@ -20,7 +20,7 @@ interface Swatch {
 
 interface WindowState {
     id: BrowserWindowId;
-    swatchIdx: number;
+    hue: number;
 }
 
 interface StateResponse {
@@ -31,7 +31,7 @@ interface StateResponse {
 interface SetSwatchMessage {
     type: "SET_SWATCH";
     windowId: BrowserWindowId;
-    swatchIdx: number;
+    hue: number;
 }
 
 interface GetStateMessage {
@@ -194,7 +194,7 @@ const REFERENCE_HUE = rgbToHsl(...BASE_COLORS.toolbar_field_separator).h;
 
 const SWATCHES: readonly Swatch[] = [
     { name: "Original", hue: REFERENCE_HUE },
-    { name: "Purple", hue: 290 },
+    { name: "Purple", hue: 275, hueAttraction: 0.6 },
     { name: "Red", hue: 0 },
     { name: "Orange", hue: 30, hueAttraction: 0.6 },
     { name: "Yellow", hue: 50, hueAttraction: 0.6 },
@@ -217,21 +217,24 @@ function isRuntimeMessage(message: unknown): message is RuntimeMessage {
     return (
         message["type"] === "SET_SWATCH" &&
         typeof message["windowId"] === "number" &&
-        typeof message["swatchIdx"] === "number"
+        typeof message["hue"] === "number"
     );
 }
 
-function isSwatchIndex(value: unknown): value is number {
+function isHue(value: unknown): value is number {
+    return typeof value === "number" && isFinite(value);
+}
+
+function getSwatchForHue(hue: number): Swatch {
+    return SWATCHES.find((s) => s.hue === hue) ?? { name: "Custom", hue };
+}
+
+function getNextFreeHue(): number {
+    const used = new Set(windowSwatches.values());
     return (
-        typeof value === "number" &&
-        Number.isInteger(value) &&
-        value >= 0 &&
-        value < SWATCHES.length
+        SWATCHES.find((s) => !used.has(s.hue))?.hue ??
+        SWATCHES[windowSwatches.size % SWATCHES.length]!.hue
     );
-}
-
-function normalizeSwatchIndex(value: number): number {
-    return Number.isInteger(value) && value >= 0 ? value % SWATCHES.length : 0;
 }
 
 function getErrorMessage(error: unknown): string {
@@ -331,21 +334,9 @@ function rotateImageHue(data: Uint8ClampedArray, hueShift: number, targetHue?: n
     }
 }
 
-function getNextFreeSwatchIdx(): number {
-    const used = new Set(windowSwatches.values());
-
-    for (let i = 0; i < SWATCHES.length; i += 1) {
-        if (!used.has(i)) {
-            return i;
-        }
-    }
-
-    return (Math.max(...used) + 1) % SWATCHES.length;
-}
-
-function persistSwatch(windowId: BrowserWindowId, swatchIdx: number): void {
+function persistSwatch(windowId: BrowserWindowId, hue: number): void {
     browser.sessions
-        .setWindowValue(windowId, "swatchIdx", swatchIdx)
+        .setWindowValue(windowId, "swatchHue", hue)
         .catch((error: unknown) => {
             console.warn(
                 "[ColorfulBlur] failed to persist swatch for window",
@@ -358,11 +349,10 @@ function persistSwatch(windowId: BrowserWindowId, swatchIdx: number): void {
 
 async function setSwatch(
     windowId: BrowserWindowId,
-    swatchIdx: number,
+    hue: number,
 ): Promise<void> {
-    const normalized = normalizeSwatchIndex(swatchIdx);
-    windowSwatches.set(windowId, normalized);
-    persistSwatch(windowId, normalized);
+    windowSwatches.set(windowId, hue);
+    persistSwatch(windowId, hue);
     await applyThemeToWindow(windowId);
 }
 
@@ -373,36 +363,36 @@ async function loadWindowColors(): Promise<void> {
         let saved: unknown;
 
         try {
-            saved = await browser.sessions.getWindowValue(win.id, "swatchIdx");
+            saved = await browser.sessions.getWindowValue(win.id, "swatchHue");
         } catch (_error) {
             saved = undefined;
         }
 
-        if (isSwatchIndex(saved)) {
+        if (isHue(saved)) {
             windowSwatches.set(win.id, saved);
         } else {
-            const idx = getNextFreeSwatchIdx();
-            windowSwatches.set(win.id, idx);
-            persistSwatch(win.id, idx);
+            const hue = getNextFreeHue();
+            windowSwatches.set(win.id, hue);
+            persistSwatch(win.id, hue);
         }
     }
 }
 
 async function applyThemeToWindow(windowId: BrowserWindowId): Promise<void> {
-    const swatchIdx = windowSwatches.get(windowId) ?? 0;
-    const swatch = SWATCHES[swatchIdx]!;
-    const hueShift = swatch.hue - REFERENCE_HUE;
-    const { hue: targetHue, hueAttraction } = swatch;
+    const hue = windowSwatches.get(windowId) ?? SWATCHES[0]!.hue;
+    const swatch = getSwatchForHue(hue);
+    const hueShift = hue - REFERENCE_HUE;
+    const { hueAttraction } = swatch;
     const shiftedColors: Record<string, ThemeColor> = {};
 
     for (const [key, value] of Object.entries(BASE_COLORS)) {
-        shiftedColors[key] = shiftColorHue(value, hueShift, targetHue, hueAttraction);
+        shiftedColors[key] = shiftColorHue(value, hueShift, hue, hueAttraction);
     }
 
     let imageUrl: string | null = null;
 
     try {
-        imageUrl = await getHueShiftedImageUrl(hueShift, targetHue, hueAttraction);
+        imageUrl = await getHueShiftedImageUrl(hueShift, hue, hueAttraction);
     } catch (error) {
         console.warn(
             "[ColorfulBlur] image processing failed, applying colors only:",
@@ -459,8 +449,8 @@ browser.windows.onCreated.addListener(async (win) => {
     try {
         const stored = await browser.storage.local.get("autoAssign");
         const autoAssign = stored["autoAssign"] !== false;
-        const idx = autoAssign ? getNextFreeSwatchIdx() : 0;
-        await setSwatch(win.id, idx);
+        const hue = autoAssign ? getNextFreeHue() : SWATCHES[0]!.hue;
+        await setSwatch(win.id, hue);
     } catch (error) {
         await reportError("new window setup failed", error);
     }
@@ -479,13 +469,13 @@ browser.runtime.onMessage.addListener((message) => {
         return browser.windows.getAll().then<StateResponse>((windows) => ({
             windows: windows.filter(isNormalWindow).map((win) => ({
                 id: win.id,
-                swatchIdx: windowSwatches.get(win.id) ?? 0,
+                hue: windowSwatches.get(win.id) ?? SWATCHES[0]!.hue,
             })),
             swatches: SWATCHES,
         }));
     }
 
-    return setSwatch(message.windowId, message.swatchIdx).then(() => ({
+    return setSwatch(message.windowId, message.hue).then(() => ({
         ok: true,
     }));
 });
